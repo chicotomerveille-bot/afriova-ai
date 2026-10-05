@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/afriova
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      # Mobile Money API keys (exemple)
+      - ORANGE_MONEY_API_KEY=${ORANGE_MONEY_API_KEY}
+      - ORANGE_MONEY_API_SECRET=${ORANGE_MONEY_API_SECRET}
+      - MTN_MOMO_API_KEY=${MTN_MOMO_API_KEY}
+      - MTN_MOMO_API_SECRET=${MTN_MOMO_API_SECRET}
+      - WAVE_API_KEY=${WAVE_API_KEY}
+    volumes:
+      - ./backend:/app
+      - ./agents:/app/agents
+      - ./integrations:/app/integrations
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=afriova
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # Pour le développement, on peut ajouter un service de documentation API
+  # ou d'autres services selon les besoins
+
+volumes:
+  postgres_data:
